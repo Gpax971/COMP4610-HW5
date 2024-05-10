@@ -93,7 +93,7 @@ void rasterizer::drawRope3D(Rope *rope, const std::vector<unsigned char> &color)
     unsigned char g = color[1];
     unsigned char b = color[2];
 
-    for (auto &s : rope->springs) {
+    for (Spring* s : rope->springs) {
         Eigen::Vector3f p1 = s->m1->position;
         Eigen::Vector3f p2 = s->m2->position;
         draw_line_3D(p1, p2, {r, g, b});
