@@ -17,7 +17,7 @@ void Rope::initializeMasses(Eigen::Vector3f start, Eigen::Vector3f end, int num_
     Eigen::Vector3f diff = end - start;
 
     for (int i = 0; i < num_nodes; ++i) {
-        float ratio = (float)i / (num_nodes - 1.f);
+        float ratio = i / (num_nodes - 1.f);
         Mass* mass = new Mass(start + ratio * diff, node_mass);
         masses.push_back(mass);
     }
@@ -31,7 +31,6 @@ void Rope::initializeMasses(Eigen::Vector3f start, Eigen::Vector3f end, int num_
 void Rope::linkSprings(float k) {
 
     if (masses.size() < 2) return;
-    std::cout << "linking\n";
     for (int i = 0; i < masses.size() - 1; ++i) {
         Spring* spring = new Spring(masses[i], masses[i+1], k);
         springs.push_back(spring);
@@ -42,25 +41,44 @@ void Rope::linkSprings(float k) {
 void Rope::simulateEuler(float delta_t, Eigen::Vector3f gravity, IntegrationMethod method) {
 
     // TODO: Task 2 - Implement Euler integration
-    for (auto i = masses.begin(); i < masses.end(); ++i) {
-        Mass* m = *i;
-        m->force = Eigen::Vector3f(0);
+    for (Mass* m : masses) {
+        m->force = {0, 0, 0};
     }
+
     for (Spring* s : springs) {
         Eigen::Vector3f a = s->m1->position;
         Eigen::Vector3f b = s->m2->position;
         float ba_norm = (b - a).norm();
-        Eigen::Vector3f fba = -s->k * (b - a) / ba_norm * (ba_norm - s->rest_length);
-        s->m2->force += (s->m2->is_fixed) ? Eigen::Vector3f(0) : fba;
-        // s->m1->force -= (s->m1->is_fixed) ? Eigen::Vector3f(0) : fba;
+        Eigen::Vector3f fba = s->k * (b - a) * (ba_norm - s->rest_length) / ba_norm;
+        if (!s->m1->is_fixed) {
+            s->m1->force += fba;
+            s->m1->force -= damping_factor * s->m1->velocity;
+        }
+        if (!s->m2->is_fixed) {
+            s->m2->force -= fba;
+            s->m2->force -= damping_factor * s->m2->velocity;
+        }
+    }
+    
+    if (method == IntegrationMethod::IMPLICIT) {
+        for (Mass* m : masses) {
+            if (m->is_fixed) continue;
+        Eigen::Vector3f pos = m->position;
+            Eigen::Vector3f accel = m->force / m->mass + gravity;
+            m->velocity = m->velocity + accel * delta_t;
+            m->position += m->velocity * delta_t;
+            m->last_position = pos;
+        }
+        return;
     }
     
     for (Mass* m : masses) {
         if (m->is_fixed) continue;
-        Eigen::Vector3f accel = m->force / m->mass;// + gravity;
-        Eigen::Vector3f nextVel = m->velocity + accel * delta_t;
-        m->position = m->position + ((method == IntegrationMethod::IMPLICIT) ? nextVel : m->velocity) * delta_t;
-        m->velocity = nextVel;
+        Eigen::Vector3f pos = m->position;
+        Eigen::Vector3f accel = m->force / m->mass + gravity;
+        m->position += m->velocity * delta_t;
+        m->velocity = m->velocity + accel * delta_t;
+        m->last_position = pos;
     }
 }
 
@@ -68,5 +86,28 @@ void Rope::simulateEuler(float delta_t, Eigen::Vector3f gravity, IntegrationMeth
 void Rope::simulateVerlet(float delta_t, Eigen::Vector3f gravity) {
 
     // TODO: Task 3 - Implement Verlet integration
-        
+    for (Mass* m : masses) {
+        m->force = {0, 0, 0};
+    }
+
+    for (Spring* s : springs) {
+        Eigen::Vector3f a = s->m1->position;
+        Eigen::Vector3f b = s->m2->position;
+        float ba_norm = (b - a).norm();
+        Eigen::Vector3f fba = s->k * (b - a) * (ba_norm - s->rest_length) / ba_norm;
+        if (!s->m1->is_fixed) {
+            s->m1->force += fba;
+        }
+        if (!s->m2->is_fixed) {
+            s->m2->force -= fba;
+        }
+    }
+    
+    for (Mass* m : masses) {
+        if (m->is_fixed) continue;
+        Eigen::Vector3f accel = m->force / m->mass + gravity;
+        Eigen::Vector3f pos = m->position;
+        m->position += (1.f - damping_factor) * (m->position - m->last_position) + accel * delta_t * delta_t; 
+        m->last_position = pos;
+    }
 }

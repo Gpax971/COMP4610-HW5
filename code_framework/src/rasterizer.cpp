@@ -89,9 +89,9 @@ void rasterizer::drawRope3D(Rope *rope, const std::vector<unsigned char> &color)
         return;
     }
 
-    unsigned char r = color[0];
-    unsigned char g = color[1];
-    unsigned char b = color[2];
+    float r = color[0];
+    float g = color[1];
+    float b = color[2];
 
     for (Spring* s : rope->springs) {
         Eigen::Vector3f p1 = s->m1->position;
@@ -111,9 +111,9 @@ void rasterizer::drawCloth(Cloth *cloth, const std::vector<unsigned char> &color
         return;
     }
 
-    unsigned char r = color[0];
-    unsigned char g = color[1];
-    unsigned char b = color[2];
+    float r = color[0];
+    float g = color[1];
+    float b = color[2];
 
     auto &masses = cloth->masses;
     int num_nodes_x = cloth->num_nodes_x;
@@ -142,9 +142,9 @@ void rasterizer::drawBox(Box *box, const std::vector<unsigned char> &color) {
         return;
     }
 
-    unsigned char r = color[0];
-    unsigned char g = color[1];
-    unsigned char b = color[2];
+    float r = color[0];
+    float g = color[1];
+    float b = color[2];
 
     Eigen::Vector3f half_dimensions = box->dimensions / 2.0;
     Eigen::Vector3f center = box->center;

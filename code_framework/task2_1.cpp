@@ -39,7 +39,6 @@ int main(int argc, char** argv) {
 
     Eigen::Vector3f eye_pos = {0, 0, 20};
     float angle = 0;
-    std::cout << "SETTING STUFF" << std::endl;
     r.set_view(get_view_matrix(eye_pos));
     r.set_projection(get_projection_matrix(45.0, 1, 0.1, 50));
     r.set_model(get_model_matrix(angle, {0, 1, 0}, {0, 0, 0}));
@@ -47,25 +46,14 @@ int main(int argc, char** argv) {
 
     while (true) {
         auto start = std::chrono::high_resolution_clock::now();
-        std::cout << "START LOOP" << std::endl;
-
 
         for (int i = 0; i < config.steps_per_fps; ++i) {
 
             rope.simulateEuler(1.f/config.steps_per_fps, config.gravity, IntegrationMethod::EXPLICIT);
-
-            std::cout << rope.springs[1]->m1->position << std::endl << std::endl;
         }   
 
         r.clear();
 
-        // std::cout << "Before draw\n";
-        // for (Spring* s : rope.springs) {
-        //     Eigen::Vector3f p1 = s->m1->position;
-        //     Eigen::Vector3f p2 = s->m2->position;
-        //     std::cout << p1.x() << std::endl;
-        //     std::cout << p2.x() << std::endl << std::endl;
-        // }
         r.drawRope3D(&rope, {255, 255, 255});
         
         r.flip_vertically();
@@ -82,14 +70,6 @@ int main(int argc, char** argv) {
         if (waitKey(1) == 27) {
             break;
         }
-
-        // std::cout << "After draw\n";
-        // for (Spring* s : rope.springs) {
-        //     Eigen::Vector3f p1 = s->m1->position;
-        //     Eigen::Vector3f p2 = s->m2->position;
-        //     std::cout << p1.x() << std::endl;
-        //     std::cout << p2.x() << std::endl << std::endl;
-        // }
     }
 
     destroyWindow(windowName);

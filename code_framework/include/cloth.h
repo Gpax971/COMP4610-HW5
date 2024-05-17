@@ -32,6 +32,7 @@ private:
 
     void initializeMasses();
     void linkSprings();
+    int getIndex(int x, int z);
     
 };
 
