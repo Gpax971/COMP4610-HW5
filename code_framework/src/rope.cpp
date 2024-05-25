@@ -41,9 +41,6 @@ void Rope::linkSprings(float k) {
 void Rope::simulateEuler(float delta_t, Eigen::Vector3f gravity, IntegrationMethod method) {
 
     // TODO: Task 2 - Implement Euler integration
-    for (Mass* m : masses) {
-        m->force = {0, 0, 0};
-    }
 
     for (Spring* s : springs) {
         Eigen::Vector3f a = s->m1->position;
@@ -52,43 +49,38 @@ void Rope::simulateEuler(float delta_t, Eigen::Vector3f gravity, IntegrationMeth
         Eigen::Vector3f fba = s->k * (b - a) * (ba_norm - s->rest_length) / ba_norm;
         if (!s->m1->is_fixed) {
             s->m1->force += fba;
-            s->m1->force -= damping_factor * s->m1->velocity;
         }
         if (!s->m2->is_fixed) {
             s->m2->force -= fba;
-            s->m2->force -= damping_factor * s->m2->velocity;
         }
     }
     
     if (method == IntegrationMethod::IMPLICIT) {
         for (Mass* m : masses) {
             if (m->is_fixed) continue;
-        Eigen::Vector3f pos = m->position;
+            m->last_position = m->position;
+            m->force -= damping_factor * m->velocity;
             Eigen::Vector3f accel = m->force / m->mass + gravity;
-            m->velocity = m->velocity + accel * delta_t;
+            m->velocity += accel * delta_t;
             m->position += m->velocity * delta_t;
-            m->last_position = pos;
+            m->force = {0, 0, 0};
         }
         return;
     }
     
     for (Mass* m : masses) {
         if (m->is_fixed) continue;
-        Eigen::Vector3f pos = m->position;
+        m->last_position = m->position;
+        m->force -= damping_factor * m->velocity;
         Eigen::Vector3f accel = m->force / m->mass + gravity;
         m->position += m->velocity * delta_t;
-        m->velocity = m->velocity + accel * delta_t;
-        m->last_position = pos;
+        m->velocity += accel * delta_t;
+        m->force = {0, 0, 0};
     }
 }
 
 
 void Rope::simulateVerlet(float delta_t, Eigen::Vector3f gravity) {
-
-    // TODO: Task 3 - Implement Verlet integration
-    for (Mass* m : masses) {
-        m->force = {0, 0, 0};
-    }
 
     for (Spring* s : springs) {
         Eigen::Vector3f a = s->m1->position;
@@ -109,5 +101,6 @@ void Rope::simulateVerlet(float delta_t, Eigen::Vector3f gravity) {
         Eigen::Vector3f pos = m->position;
         m->position += (1.f - damping_factor) * (m->position - m->last_position) + accel * delta_t * delta_t; 
         m->last_position = pos;
+        m->force = {0, 0, 0};
     }
 }

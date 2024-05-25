@@ -22,13 +22,12 @@ public:
         if (position.y() > center.y() + dimensions.y() / 2) return false;
         if (position.y() < center.y() - dimensions.y() / 2) return false;
         if (position.z() > center.z() + dimensions.z() / 2) return false;
-        if (position.z() < center.z() - dimensions.z() / 2) return false;
-
-        return true;
+        return !(position.z() < center.z() - dimensions.z() / 2);
     }
 
     void resolveCollision(Mass& mass) const override {
-        const float friction = 0.1; // friction : [0, 1]
+        const float f = 0.1; // friction : [0, 1]
+        const float friction = std::pow(f, 2);
 
         float top_x = center.x() + dimensions.x() / 2;
         float top_y = center.y() + dimensions.y() / 2;

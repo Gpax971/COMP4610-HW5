@@ -14,8 +14,8 @@ int main(int argc, char** argv) {
     // Configuration for the simulation
     struct {
         // Cloth properties
-        int num_nodes_x = 64;
-        int num_nodes_z = 64;
+        int num_nodes_x = 32;
+        int num_nodes_z = 32;
 
         float node_mass = 1;
         float k = 400;
@@ -32,7 +32,7 @@ int main(int argc, char** argv) {
 
     rasterizer r(800, 800);
 
-    Box box({3, 0, 3}, {8, 1, 8});
+    Box box({0, 0, 0}, {8, 1, 8});
 
     Eigen::Vector3f center = {0, 10, 0};
     Eigen::Vector2f size = {10, 10};
